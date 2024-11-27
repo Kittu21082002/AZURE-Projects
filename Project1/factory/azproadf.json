@@ -1,0 +1,9 @@
+{
+	"name": "azproadf",
+	"location": "canadacentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "aab75b59-9c0e-44da-a32a-2ec9e3803fa8",
+		"tenantId": "7b8f64b9-0d1c-423c-9e88-6bc68026aae0"
+	}
+}
