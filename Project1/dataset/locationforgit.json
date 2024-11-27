@@ -1,24 +1,17 @@
 {
-	"name": "Gitlocationdynamically",
+	"name": "locationforgit",
 	"properties": {
+		"description": "products single dataset",
 		"linkedServiceName": {
 			"referenceName": "HttpServerforgit",
 			"type": "LinkedServiceReference"
-		},
-		"parameters": {
-			"p_url": {
-				"type": "string"
-			}
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "HttpServerLocation",
-				"relativeUrl": {
-					"value": "@dataset().p_url",
-					"type": "Expression"
-				}
+				"relativeUrl": "Kittu21082002/Azure-DataEngineer-Project-Data/refs/heads/master/Adventure-works-data/AdventureWorks_Products.csv"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
