@@ -1,0 +1,11 @@
+{
+	"name": "AzureDataLakeStoragelinkedservce",
+	"properties": {
+		"description": "ADLS connection",
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://azurstoaccunt.dfs.core.windows.net/"
+		}
+	}
+}
