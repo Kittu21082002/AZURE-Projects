@@ -42,6 +42,15 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('workspaceName'), '/gdssparkpoool')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Pipelineforfintech')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -160,15 +169,187 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "bronzetosilver",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "ForEach",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "BronzetoSilverdataprocess",
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": "gdssparkpoool",
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 2,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 2
+						}
+					},
+					{
+						"name": "silvertogold",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "bronzetosilver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "SilvertoGolddataprocess",
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": "gdssparkpoool",
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 2,
+								"spark.dynamicAllocation.maxExecutors": 2
+							},
+							"driverSize": "Small",
+							"numExecutors": 2
+						}
+					},
+					{
+						"name": "successnotification",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "silvertogold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"url": "https://prod-25.canadacentral.logic.azure.com:443/workflows/a8fea90789644ca0bee0ddbb036f3456/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aQ8mFnobD4kUHLRNFeDKTVaWdQ6qpg8I6SpkwYEiGIQ",
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"body": {
+								"value": "{\n    \"to\": \"@{pipeline().parameters.to}\",\n    \"subject\": \"@{pipeline().parameters.subjectsuccess}\",\n    \"mail\": \"@{pipeline().parameters.mailsuccess}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Failnotification",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "silvertogold",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-25.canadacentral.logic.azure.com:443/workflows/a8fea90789644ca0bee0ddbb036f3456/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aQ8mFnobD4kUHLRNFeDKTVaWdQ6qpg8I6SpkwYEiGIQ",
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"body": {
+								"value": "{\n    \"to\": \"@{pipeline().parameters.to}\",\n    \"subject\": \"@{pipeline().parameters.subjectfail}\",\n    \"mail\": \"@{pipeline().parameters.mailfail}\"\n}",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"parameters": {
+					"to": {
+						"type": "string",
+						"defaultValue": "kchavva@uwm.edu"
+					},
+					"subjectsuccess": {
+						"type": "string",
+						"defaultValue": "hurry,success"
+					},
+					"mailsuccess": {
+						"type": "string",
+						"defaultValue": "pipeline executed successfully"
+					},
+					"subjectfail": {
+						"type": "string",
+						"defaultValue": "sorry failed"
+					},
+					"mailfail": {
+						"type": "string",
+						"defaultValue": "pipeline exectution failed"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/AzureSqlTablesource')]",
+				"[concat(variables('workspaceId'), '/notebooks/BronzetoSilverdataprocess')]",
+				"[concat(variables('workspaceId'), '/bigDataPools/gdssparkpoool')]",
+				"[concat(variables('workspaceId'), '/notebooks/SilvertoGolddataprocess')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/datasets/bronzelayerParquet')]"
 			]
 		},
@@ -348,6 +529,469 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/BronzetoSilverdataprocess')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "gdssparkpoool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 1,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "true",
+						"spark.dynamicAllocation.minExecutors": "1",
+						"spark.dynamicAllocation.maxExecutors": "4",
+						"spark.autotune.trackingId": "9d347a9a-543f-46bb-8abd-18d1b415804e"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/7b156976-5f29-4bc7-8637-8784ee1455b3/resourceGroups/repro2/providers/Microsoft.Synapse/workspaces/sypseforpro2/bigDataPools/gdssparkpoool",
+						"name": "gdssparkpoool",
+						"type": "Spark",
+						"endpoint": "https://sypseforpro2.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/gdssparkpoool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 10,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.functions import *\r\n",
+							"\r\n",
+							"# Define paths\r\n",
+							"base_path = \"abfss://fintech@storgeaccpro2.dfs.core.windows.net/bronze/fintech/\"\r\n",
+							"output_base_path = \"abfss://fintech@storgeaccpro2.dfs.core.windows.net/silver/fintech/\"\r\n",
+							"\r\n",
+							"spark.conf.set(\"spark.databricks.delta.schema.autoMerge.enabled\", \"true\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Transformation for Accounts dataset\r\n",
+							"def transform_accounts():\r\n",
+							"    df = spark.read.parquet(f\"{base_path}Accounts/Accounts.parquet\")\r\n",
+							"    # Example transformation: Calculate account age in years\r\n",
+							"    df_transformed = df.withColumn(\"AccountAgeYears\", \r\n",
+							"                                   round(datediff(current_date(), col(\"OpenDate\")) / 365.25, 2))\r\n",
+							"    df_transformed.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}Accounts/\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Transformation for Customers dataset\r\n",
+							"def transform_customers():\r\n",
+							"    df = spark.read.parquet(f\"{base_path}Customers/Customers.parquet\")\r\n",
+							"    # Example transformation: Create a full name column and mask the email address\r\n",
+							"    df_transformed = df.withColumn(\"FullName\", concat_ws(\" \", col(\"FirstName\"), col(\"LastName\"))) \\\r\n",
+							"                       .withColumn(\"MaskedEmail\", \r\n",
+							"                                   concat(lit(\"***@\"), substring_index(col(\"Email\"), \"@\", -1)))\r\n",
+							"    df_transformed.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}Customers/\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Transformation for Loans dataset with explicit casting\r\n",
+							"def transform_loans():\r\n",
+							"    df = spark.read.parquet(f\"{base_path}Loans/Loans.parquet\")\r\n",
+							"    # Example transformation: Calculate total interest with explicit casting to match the Delta table\r\n",
+							"    df_transformed = df.withColumn(\"TotalInterest\", \r\n",
+							"                                   (col(\"LoanAmount\") * col(\"InterestRate\") / 100).cast(\"decimal(28,8)\")) \\\r\n",
+							"                       .withColumn(\"LoanDurationYears\", \r\n",
+							"                                   round(datediff(col(\"LoanEndDate\"), col(\"LoanStartDate\")) / 365.25, 2))\r\n",
+							"    df_transformed.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}Loans/\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Transformation for Payments dataset\r\n",
+							"def transform_payments():\r\n",
+							"    df = spark.read.parquet(f\"{base_path}Payments/Payments.parquet\")\r\n",
+							"    # Example transformation: Calculate days since last payment\r\n",
+							"    df_transformed = df.withColumn(\"DaysSinceLastPayment\", \r\n",
+							"                                   datediff(current_date(), col(\"PaymentDate\")))\r\n",
+							"    df_transformed.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}Payments/\")\r\n",
+							"\r\n",
+							"# Transformation for Transactions dataset\r\n",
+							"def transform_transactions():\r\n",
+							"    df = spark.read.parquet(f\"{base_path}Transactions/Transactions.parquet\")\r\n",
+							"    # Example transformation: Categorize transaction types\r\n",
+							"    df_transformed = df.withColumn(\"TransactionCategory\", \r\n",
+							"                                   when(col(\"TransactionType\") == \"Deposit\", \"Income\")\r\n",
+							"                                   .when(col(\"TransactionType\") == \"Withdrawal\", \"Expense\")\r\n",
+							"                                   .otherwise(\"Other\"))\r\n",
+							"    df_transformed.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}Transactions/\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Process each table\r\n",
+							"transform_accounts()\r\n",
+							"transform_customers()\r\n",
+							"transform_loans()\r\n",
+							"transform_payments()\r\n",
+							"transform_transactions()\r\n",
+							"\r\n",
+							"print(\"Bronze To Silver Completed !!\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SilvertoGolddataprocess')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "gdssparkpoool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 1,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "true",
+						"spark.dynamicAllocation.minExecutors": "1",
+						"spark.dynamicAllocation.maxExecutors": "4",
+						"spark.autotune.trackingId": "da5fa6d7-7e2f-4a11-a9df-8bd7247ead1a"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/7b156976-5f29-4bc7-8637-8784ee1455b3/resourceGroups/repro2/providers/Microsoft.Synapse/workspaces/sypseforpro2/bigDataPools/gdssparkpoool",
+						"name": "gdssparkpoool",
+						"type": "Spark",
+						"endpoint": "https://sypseforpro2.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/gdssparkpoool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 10,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.functions import *\r\n",
+							"\r\n",
+							"# Define paths\r\n",
+							"silver_base_path = \"abfss://fintech@storgeaccpro2.dfs.core.windows.net/silver/fintech/\"\r\n",
+							"output_base_path = \"abfss://fintech@storgeaccpro2.dfs.core.windows.net/gold/fintech/\"\r\n",
+							"\r\n",
+							"# Load data from the silver layer\r\n",
+							"accounts_df = spark.read.format(\"delta\").load(f\"{silver_base_path}Accounts/\")\r\n",
+							"customers_df = spark.read.format(\"delta\").load(f\"{silver_base_path}Customers/\")\r\n",
+							"loans_df = spark.read.format(\"delta\").load(f\"{silver_base_path}Loans/\")\r\n",
+							"payments_df = spark.read.format(\"delta\").load(f\"{silver_base_path}Payments/\")\r\n",
+							"transactions_df = spark.read.format(\"delta\").load(f\"{silver_base_path}Transactions/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"dim_customers_df = customers_df.select(\r\n",
+							"    col(\"CustomerID\").alias(\"customer_id\"),\r\n",
+							"    col(\"FirstName\").alias(\"first_name\"),\r\n",
+							"    col(\"LastName\").alias(\"last_name\"),\r\n",
+							"    col(\"Email\").alias(\"email\"),\r\n",
+							"    col(\"PhoneNumber\").alias(\"phone_number\"),\r\n",
+							"    col(\"Address\").alias(\"address\"),\r\n",
+							"    col(\"City\").alias(\"city\"),\r\n",
+							"    col(\"State\").alias(\"state\"),\r\n",
+							"    col(\"Country\").alias(\"country\"),\r\n",
+							"    col(\"ZipCode\").alias(\"zip_code\"),\r\n",
+							"    col(\"SignupDate\").alias(\"signup_date\")\r\n",
+							")\r\n",
+							"\r\n",
+							"dim_customers_df.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}dim_customers/\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"dim_accounts_df = accounts_df.select(\r\n",
+							"    col(\"AccountID\").alias(\"account_id\"),\r\n",
+							"    col(\"AccountType\").alias(\"account_type\"),\r\n",
+							"    col(\"Balance\").alias(\"balance\"),\r\n",
+							"    col(\"OpenDate\").alias(\"open_date\"),\r\n",
+							"    col(\"AccountAgeYears\").alias(\"account_age_years\")\r\n",
+							")\r\n",
+							"\r\n",
+							"dim_accounts_df.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}dim_accounts/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"dim_loans_df = loans_df.select(\r\n",
+							"    col(\"LoanID\").alias(\"loan_id\"),\r\n",
+							"    col(\"LoanType\").alias(\"loan_type\"),\r\n",
+							"    col(\"LoanAmount\").alias(\"loan_amount\"),\r\n",
+							"    col(\"InterestRate\").alias(\"interest_rate\"),\r\n",
+							"    col(\"LoanStartDate\").alias(\"loan_start_date\"),\r\n",
+							"    col(\"LoanEndDate\").alias(\"loan_end_date\"),\r\n",
+							"    col(\"TotalInterest\").alias(\"total_interest\"),\r\n",
+							"    col(\"LoanDurationYears\").alias(\"loan_duration_years\")\r\n",
+							")\r\n",
+							"\r\n",
+							"dim_loans_df.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}dim_loans/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"fact_payments_df = payments_df \\\r\n",
+							"    .join(loans_df.select(\"LoanID\", \"CustomerID\"), \"LoanID\") \\\r\n",
+							"    .select(\r\n",
+							"        col(\"PaymentID\").alias(\"payment_id\"),\r\n",
+							"        col(\"LoanID\").alias(\"loan_id\"),\r\n",
+							"        col(\"CustomerID\").alias(\"customer_id\"),\r\n",
+							"        col(\"PaymentDate\").alias(\"payment_date\"),\r\n",
+							"        col(\"PaymentAmount\").alias(\"payment_amount\"),\r\n",
+							"        col(\"PaymentMethod\").alias(\"payment_method\")\r\n",
+							"    )\r\n",
+							"\r\n",
+							"fact_payments_df.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}fact_payments/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"fact_transactions_df = transactions_df \\\r\n",
+							"    .join(accounts_df.select(\"AccountID\", \"CustomerID\"), \"AccountID\") \\\r\n",
+							"    .select(\r\n",
+							"        col(\"TransactionID\").alias(\"transaction_id\"),\r\n",
+							"        col(\"AccountID\").alias(\"account_id\"),\r\n",
+							"        col(\"CustomerID\").alias(\"customer_id\"),\r\n",
+							"        col(\"TransactionDate\").alias(\"transaction_date\"),\r\n",
+							"        col(\"Amount\").alias(\"amount\"),\r\n",
+							"        col(\"TransactionType\").alias(\"transaction_type\"),\r\n",
+							"        col(\"Description\").alias(\"description\")\r\n",
+							"    )\r\n",
+							"\r\n",
+							"fact_transactions_df.write.format(\"delta\").mode(\"overwrite\").save(f\"{output_base_path}fact_transactions/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/gdssparkpoool')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 10,
+					"minNodeCount": 3
+				},
+				"nodeCount": 10,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.4",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "canadacentral"
 		}
 	]
 }
