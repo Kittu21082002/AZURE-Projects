@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "sypseforpro2"
+		},
+		"AzureSqlDatabaselnkdservice_password": {
+			"value": ""
+		},
+		"sypseforpro2-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:sypseforpro2.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureDataLakeStoragelndservice_properties_typeProperties_url": {
+			"value": "https://storgeaccpro2.dfs.core.windows.net/"
+		},
+		"AzureSqlDatabaselnkdservice_properties_typeProperties_server": {
+			"value": "servrforpro2.database.windows.net"
+		},
+		"AzureSqlDatabaselnkdservice_properties_typeProperties_database": {
+			"value": "dbpro2"
+		},
+		"AzureSqlDatabaselnkdservice_properties_typeProperties_userName": {
+			"value": "chavva"
+		},
+		"sypseforpro2-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://dfltadlsacc.dfs.core.windows.net"
+		}
+	}
+}
