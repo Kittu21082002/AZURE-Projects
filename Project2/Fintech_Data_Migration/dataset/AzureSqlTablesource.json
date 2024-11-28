@@ -1,0 +1,12 @@
+{
+	"name": "AzureSqlTablesource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabaselnkdservice",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
