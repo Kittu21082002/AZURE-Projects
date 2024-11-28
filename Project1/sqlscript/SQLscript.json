@@ -1,0 +1,17 @@
+{
+	"name": "SQLscript",
+	"properties": {
+		"content": {
+			"query": "select * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_Calendar/',\n    FORMAT='parquet'\n) as query1",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "azpro1db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

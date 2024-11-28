@@ -1,0 +1,17 @@
+{
+	"name": "create views",
+	"properties": {
+		"content": {
+			"query": "create VIEW gold.calender as\nselect * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_Calendar/',\n    FORMAT='parquet'\n) as query1\n\ncreate VIEW gold.products as\nselect * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_Products/',\n    FORMAT='parquet'\n) as query1\n\ncreate VIEW gold.returnss as\nselect * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_Returns/',\n    FORMAT='parquet'\n) as query1\n\ncreate VIEW gold.sales as\nselect * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_Sales/',\n    FORMAT='parquet'\n) as query1\n\ncreate VIEW gold.subcategories as\nselect * from \nOPENROWSET(\n    BULK 'https://azurstoaccunt.dfs.core.windows.net/silver/AdventureWorks_SUbCategories/',\n    FORMAT='parquet'\n) as query1\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "azpro1db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
