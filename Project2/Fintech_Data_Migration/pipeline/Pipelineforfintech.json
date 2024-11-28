@@ -113,8 +113,163 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "bronzetosilver",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "ForEach",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "BronzetoSilverdataprocess",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "gdssparkpoool",
+						"type": "BigDataPoolReference"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": true
+					}
+				}
+			},
+			{
+				"name": "silvertogold",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "bronzetosilver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "SilvertoGolddataprocess",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "gdssparkpoool",
+						"type": "BigDataPoolReference"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": true
+					}
+				}
+			},
+			{
+				"name": "successnotification",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "silvertogold",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"body": {
+						"value": "{\n    \"to\": \"@{pipeline().parameters.to}\",\n    \"subject\": \"@{pipeline().parameters.subjectsuccess}\",\n    \"mail\": \"@{pipeline().parameters.mailsuccess}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Failnotification",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "silvertogold",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"body": {
+						"value": "{\n    \"to\": \"@{pipeline().parameters.to}\",\n    \"subject\": \"@{pipeline().parameters.subjectfail}\",\n    \"mail\": \"@{pipeline().parameters.mailfail}\"\n}",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"parameters": {
+			"to": {
+				"type": "string",
+				"defaultValue": "kchavva@uwm.edu"
+			},
+			"subjectsuccess": {
+				"type": "string",
+				"defaultValue": "hurry,success"
+			},
+			"mailsuccess": {
+				"type": "string",
+				"defaultValue": "pipeline executed successfully"
+			},
+			"subjectfail": {
+				"type": "string",
+				"defaultValue": "sorry failed"
+			},
+			"mailfail": {
+				"type": "string",
+				"defaultValue": "pipeline exectution failed"
+			}
+		},
 		"annotations": []
 	}
 }
