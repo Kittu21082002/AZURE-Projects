@@ -48,7 +48,7 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Copy data1",
+							"name": "Copy data",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -63,7 +63,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@{concat('select * from ', item().SchemaName '.' item().TableName)}",
+										"value": "@{concat('select * from ', item().SchemaName, '.', item().TableName)}",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
