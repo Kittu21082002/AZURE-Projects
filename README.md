@@ -15,6 +15,9 @@ This project provides an **end-to-end solution** for implementing a data pipelin
 
 ## Architecture Overview
 
+![architecture](https://github.com/user-attachments/assets/c3f84c47-d482-468d-9ed4-c5443aafe4c2)
+
+
 The project follows the **Medallion Architecture**:
 - **Bronze Layer**: Stores raw data fetched from APIs.  
 - **Silver Layer**: Processes and cleanses data using transformations in Azure Databricks.  
