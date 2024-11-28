@@ -19,7 +19,7 @@ The project follows the **Medallion Architecture**:
 - **Bronze Layer**: Stores raw data fetched from APIs.  
 - **Silver Layer**: Processes and cleanses data using transformations in Azure Databricks.  
 - **Gold Layer**: Serves clean, analytical data in Azure Synapse Analytics for stakeholders.
-- 
+  
 ## Technologies Used
 
 - **Azure Data Factory**: Orchestration and data ingestion.  
