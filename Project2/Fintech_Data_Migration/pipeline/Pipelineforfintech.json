@@ -143,9 +143,14 @@
 						"referenceName": "gdssparkpoool",
 						"type": "BigDataPoolReference"
 					},
+					"executorSize": "Small",
 					"conf": {
-						"spark.dynamicAllocation.enabled": true
-					}
+						"spark.dynamicAllocation.enabled": true,
+						"spark.dynamicAllocation.minExecutors": 2,
+						"spark.dynamicAllocation.maxExecutors": 1
+					},
+					"driverSize": "Small",
+					"numExecutors": 2
 				}
 			},
 			{
@@ -177,9 +182,14 @@
 						"referenceName": "gdssparkpoool",
 						"type": "BigDataPoolReference"
 					},
+					"executorSize": "Small",
 					"conf": {
-						"spark.dynamicAllocation.enabled": true
-					}
+						"spark.dynamicAllocation.enabled": true,
+						"spark.dynamicAllocation.minExecutors": 2,
+						"spark.dynamicAllocation.maxExecutors": 2
+					},
+					"driverSize": "Small",
+					"numExecutors": 2
 				}
 			},
 			{
@@ -202,10 +212,11 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"method": "PUT",
+					"method": "POST",
 					"headers": {
 						"Content-Type": "application/json"
 					},
+					"url": "https://prod-25.canadacentral.logic.azure.com:443/workflows/a8fea90789644ca0bee0ddbb036f3456/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aQ8mFnobD4kUHLRNFeDKTVaWdQ6qpg8I6SpkwYEiGIQ",
 					"connectVia": {
 						"referenceName": "AutoResolveIntegrationRuntime",
 						"type": "IntegrationRuntimeReference"
@@ -237,6 +248,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"method": "POST",
+					"url": "https://prod-25.canadacentral.logic.azure.com:443/workflows/a8fea90789644ca0bee0ddbb036f3456/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aQ8mFnobD4kUHLRNFeDKTVaWdQ6qpg8I6SpkwYEiGIQ",
 					"connectVia": {
 						"referenceName": "AutoResolveIntegrationRuntime",
 						"type": "IntegrationRuntimeReference"
