@@ -1,0 +1,17 @@
+{
+	"name": "sql script after views",
+	"properties": {
+		"content": {
+			"query": "select * from gold.calender",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "azpro1db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

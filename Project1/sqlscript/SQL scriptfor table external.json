@@ -1,0 +1,18 @@
+{
+	"name": "SQL scriptfor table external",
+	"properties": {
+		"description": "where we create an external tables ...",
+		"content": {
+			"query": "create master key ENCRYPTION by PASSWORD = 'Admin@11';\n\ncreate database SCOPED CREDENTIAL cred_chavva\nwith IDENTITY = 'managed identity'\n\ncreate external data SOURCE silver_source\nwith(\n    location ='https://azurstoaccunt.dfs.core.windows.net/silver',\n    CREDENTIAL = cred_chavva\n)\n\ncreate external data SOURCE gold_source\nwith(\n    location ='https://azurstoaccunt.dfs.core.windows.net/gold',\n    CREDENTIAL = cred_chavva\n)\n\ncreate external FILE FORMAT parquet_format\nwith(\n    FORMAT_TYPE = PARQUET,\n    DATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n)\n\ncreate EXTERNAL TABLE gold.extsales\nwith(\n    LOCATION = 'exxtsaless',\n    data_source = gold_source,\n    file_format = parquet_format\n)as \nselect * from gold.sales\n\n\n\n\n\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "azpro1db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
