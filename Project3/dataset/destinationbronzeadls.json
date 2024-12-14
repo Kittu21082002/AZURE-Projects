@@ -1,0 +1,20 @@
+{
+	"name": "destinationbronzeadls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "adlslinkser",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "tripsdata",
+				"fileSystem": "bronze"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

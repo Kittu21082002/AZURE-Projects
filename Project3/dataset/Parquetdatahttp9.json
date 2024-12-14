@@ -1,0 +1,27 @@
+{
+	"name": "Parquetdatahttp9",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "nycweb",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"p_greater": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "trip-data/green_tripdata_2023-@{dataset().p_greater}.parquet",
+					"type": "Expression"
+				}
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
