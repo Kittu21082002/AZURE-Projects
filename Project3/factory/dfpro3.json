@@ -1,0 +1,9 @@
+{
+	"name": "dfpro3",
+	"location": "canadacentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "a10257a8-4078-4d40-88ff-7eeeddfab1ce",
+		"tenantId": "7b8f64b9-0d1c-423c-9e88-6bc68026aae0"
+	}
+}
