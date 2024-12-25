@@ -65,4 +65,4 @@ The project follows the **Medallion Architecture**:
 - Gained insights into interview expectations for data engineering roles.  
 ## Conclusion
 
-This project is a one-stop solution for mastering Azure data engineering. By completing it, you will not only enhance your technical skills but also boost your confidence for interviews. It helped me crack multiple offers, and I hope it does the same for you!
+This project is a one-stop solution for mastering Azure data engineering. By completing it, you will not only enhance your technical skills but also boost your confidence for interviews. 
